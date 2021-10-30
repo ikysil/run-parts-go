@@ -74,4 +74,4 @@ Go implementation of `run-parts` - concept taken from [Debian](http://www.unix.c
 
 * [Building simple command-line (CLI) applications in Go using Commando](https://medium.com/sysf/building-simple-command-line-cli-applications-in-go-using-commando-8a8e0edbd48a)
 * [How to write fast, fun command-line applications with Golang](https://www.freecodecamp.org/news/writing-command-line-applications-in-go-2bc8c0ace79d/)
-* [pflag is a drop-in replacement for Go's flag package, implementing POSIX/GNU-style --flags.](https://github.com/ogier/pflag)
+* [pflag is a drop-in replacement for Go's flag package, implementing POSIX/GNU-style --flags.](https://github.com/spf13/pflags)
