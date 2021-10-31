@@ -1,7 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
+	"os"
+	"sort"
 
 	flag "github.com/spf13/pflag"
 )
@@ -32,6 +35,22 @@ octal. By default the umask is set to 022.`)
 var verbose = flag.BoolP("verbose", "v", false,
 	`print the name of each script to stderr before running.`)
 
+func FindFiles(dir string) ([]os.FileInfo, error) {
+	var files, err = ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	sort.SliceStable(files, func(i, j int) bool {
+		return files[i].Name() < files[j].Name()
+	})
+	if *reverse {
+		for i, j := 0, len(files)-1; i < j; i, j = i+1, j-1 {
+			files[i], files[j] = files[j], files[i]
+		}
+	}
+	return files, nil
+}
+
 func main() {
 	// Set properties of the predefined Logger, including
 	// the log entry prefix and a flag to disable printing
@@ -42,5 +61,11 @@ func main() {
 	if *test && *list {
 		log.Fatalln("--list and --test cannot be used together")
 	}
-	log.Println("Hello, World!")
+	var files, err = FindFiles("../run-parts/test-report/")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, file := range files {
+		log.Printf("Found %s", file.Name())
+	}
 }
