@@ -24,7 +24,7 @@ namespaces - either hierarchical or reserved - or the Debian cron script namespa
 var regex = flag.String("regex", "",
 	`validate filenames against custom extended regular expression REGEX.`)
 var report = flag.Bool("report", false,
-	`similar to --verbose, but only prints the name of scripts which produce output. 
+	`similar to --verbose, but only prints the name of scripts which produce output.
 The script's name is printed to whichever of stdout or stderr the script produces
 output on. The script's name is not printed to stderr if --verbose also specified.`)
 var reverse = flag.Bool("reverse", false,
@@ -36,6 +36,7 @@ var umask = flag.String("umask", "022",
 octal. By default the umask is set to 022.`)
 var verbose = flag.BoolP("verbose", "v", false,
 	`print the name of each script to stderr before running.`)
+var dir = "."
 
 func FindFiles(dir string) ([]os.FileInfo, error) {
 	var files, err = ioutil.ReadDir(dir)
@@ -118,7 +119,7 @@ func FilterFile(file os.FileInfo) (bool, error) {
 }
 
 func Run() error {
-	var files, err = FindFiles("../run-parts/test-report/")
+	var files, err = FindFiles(dir)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -147,6 +148,13 @@ func main() {
 	flag.Parse()
 	if *test && *list {
 		log.Fatalln("--list and --test cannot be used together")
+	}
+	if flag.NArg() > 1 {
+		flag.Usage()
+		log.Fatalln("only one DIRECTORY is expected")
+	}
+	if flag.NArg() == 1 {
+		dir = flag.Arg(0)
 	}
 	Run()
 }
