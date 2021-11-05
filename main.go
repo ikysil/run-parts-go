@@ -52,25 +52,54 @@ func FindFiles(dir string) ([]os.FileInfo, error) {
 	return files, nil
 }
 
-func Run() error {
+func ActOnFile(file os.FileInfo, status *Status) (err error) {
+	if *exit_on_error && status.ExitCode != 0 {
+		return
+	}
+	status.Reset()
+	if *list {
+		log.Printf("%v %v", file.Name(), *arg)
+		return
+	}
+	if file.Mode() & 0111 == 0 {
+		return
+	}
+	if *test {
+		log.Printf("%v %v", file.Name(), *arg)
+		return
+	}
+	// TODO - implement random sleep
+	if *verbose {
+		log.Printf("executing %v %v", file.Name(), *arg)
+	}
+	// TODO - implement umask
+	// TODO - exec
+	if (*report || *verbose) && status.ExitCode != 0 {
+		log.Printf("%v exited with return code %v", file.Name(), status.ExitCode)
+	}
+	return
+}
+
+func Run() (*Status, error) {
 	var files, err = FindFiles(dir)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	var filesToProcess = []os.FileInfo{}
 	for _, file := range files {
 		var include, err = FilterFile(file)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if include {
 			filesToProcess = append(filesToProcess, file)
 		}
 	}
+	var status = NewStatus()
 	for _, file := range filesToProcess {
-		log.Printf("Found %s", file.Name())
+		ActOnFile(file, status)
 	}
-	return nil
+	return status, nil
 }
 
 func main() {
@@ -90,5 +119,10 @@ func main() {
 	if flag.NArg() == 1 {
 		dir = flag.Arg(0)
 	}
-	Run()
+	var status, err = Run()
+	if err == nil {
+		os.Exit(status.ExitCode)
+	} else {
+		log.Fatalln(err)
+	}
 }
