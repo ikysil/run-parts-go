@@ -73,7 +73,7 @@ func ActOnFile(file os.FileInfo, status *Status) (err error) {
 		log.Printf("executing %v %v", file.Name(), *arg)
 	}
 	// TODO - implement umask
-	// TODO - exec
+	Exec(file, dir, *report, *verbose, *arg, status)
 	if (*report || *verbose) && status.ExitCode != 0 {
 		log.Printf("%v exited with return code %v", file.Name(), status.ExitCode)
 	}
