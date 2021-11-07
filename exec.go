@@ -23,9 +23,9 @@ func (w *ReportingWriter) Write(d []byte) (int, error) {
     return w.w.Write(d)
 }
 
-func Exec(command string, optDir string, optReport bool, optVerbose bool, optArg []string, status *Status) (err error) {
-	var report = NewReport(command, optReport, optVerbose);
-	var cmd = exec.Command(command, optArg...);
+func Exec(command string, status *Status) (err error) {
+	var report = NewReport(command, Args.Report, Args.Verbose);
+	var cmd = exec.Command(command, Args.Arg...);
 	cmd.Stderr = NewReportingWriter(os.Stderr, report.ErrReport)
 	cmd.Stdout = NewReportingWriter(os.Stdout, report.OutReport)
 	err = cmd.Start()

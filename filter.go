@@ -43,7 +43,7 @@ func FilterFileName(fileName string) (bool, error) {
 			return false, nil
 		}
 	}
-	if *lsbsysinit {
+	if Args.LSBSysInit {
 		for _, s := range lsbSysInitSuffixToIgnore() {
 			if strings.HasSuffix(fileName, s) {
 				return false, nil
@@ -56,8 +56,8 @@ func FilterFileName(fileName string) (bool, error) {
 		}
 		return false, nil
 	}
-	if regex != nil {
-		var matched, err = regexp.MatchString(*regex, fileName)
+	if Args.Regex != "" {
+		var matched, err = regexp.MatchString(Args.Regex, fileName)
 		return matched, err
 	}
 	return true, nil

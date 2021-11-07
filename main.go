@@ -5,46 +5,17 @@ import (
 	"log"
 	"os"
 	"sort"
-
-	flag "github.com/spf13/pflag"
 )
 
-var arg = flag.StringArrayP("arg", "a", []string{},
-	`pass argument to the scripts.  Use --arg once for each argument you want passed.`)
-var exit_on_error = flag.Bool("exit-on-error", false,
-	`exit as soon as a script returns with a non-zero exit code.`)
-var list = flag.Bool("list", false,
-	`print the names of the all matching files (not limited to executables), but don't
-actually run them. This option cannot be used with --test.`)
-var lsbsysinit = flag.Bool("lsbsysinit", false,
-	`filename must be in one or more of either the LANANA-assigned namespace, the LSB
-namespaces - either hierarchical or reserved - or the Debian cron script namespace.`)
-var regex = flag.String("regex", "",
-	`validate filenames against custom extended regular expression REGEX.`)
-var report = flag.Bool("report", false,
-	`similar to --verbose, but only prints the name of scripts which produce output.
-The script's name is printed to whichever of stdout or stderr the script produces
-output on. The script's name is not printed to stderr if --verbose also specified.`)
-var reverse = flag.Bool("reverse", false,
-	`reverse the scripts' execution order.`)
-var test = flag.Bool("test", false,
-	`print the names of the scripts which would be run, but don't actually run them.`)
-var umask = flag.String("umask", "022",
-	`sets the umask to umask before running the scripts. umask should be specified in
-octal. By default the umask is set to 022.`)
-var verbose = flag.BoolP("verbose", "v", false,
-	`print the name of each script to stderr before running.`)
-var dir = "."
-
-func FindFiles(dir string) ([]os.FileInfo, error) {
-	var files, err = ioutil.ReadDir(dir)
+func FindFiles() ([]os.FileInfo, error) {
+	var files, err = ioutil.ReadDir(Args.Dir)
 	if err != nil {
 		return nil, err
 	}
 	sort.SliceStable(files, func(i, j int) bool {
 		return files[i].Name() < files[j].Name()
 	})
-	if *reverse {
+	if Args.Reverse {
 		for i, j := 0, len(files)-1; i < j; i, j = i+1, j-1 {
 			files[i], files[j] = files[j], files[i]
 		}
@@ -53,36 +24,36 @@ func FindFiles(dir string) ([]os.FileInfo, error) {
 }
 
 func ActOnFile(file os.FileInfo, status *Status) (err error) {
-	command := dir + "/" + file.Name()
-	if *exit_on_error && status.ExitCode != 0 {
+	command := Args.Dir + "/" + file.Name()
+	if Args.ExitOnError && status.ExitCode != 0 {
 		return
 	}
 	status.Reset()
-	if *list {
-		log.Printf("%v %v", command, *arg)
+	if Args.List {
+		log.Printf("%v %v", command, Args.Arg)
 		return
 	}
 	if file.Mode() & 0111 == 0 {
 		return
 	}
-	if *test {
-		log.Printf("%v %v", command, *arg)
+	if Args.Test {
+		log.Printf("%v %v", command, Args.Arg)
 		return
 	}
 	// TODO - implement random sleep
-	if *verbose {
-		log.Printf("executing %v %v", command, *arg)
+	if Args.Verbose {
+		log.Printf("executing %v %v", command, Args.Arg)
 	}
 	// TODO - implement umask
-	Exec(command, dir, *report, *verbose, *arg, status)
-	if (*report || *verbose) && status.ExitCode != 0 {
+	Exec(command, status)
+	if (Args.Report || Args.Verbose) && status.ExitCode != 0 {
 		log.Printf("%v exited with return code %v", command, status.ExitCode)
 	}
 	return
 }
 
 func Run() (*Status, error) {
-	var files, err = FindFiles(dir)
+	var files, err = FindFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -104,22 +75,6 @@ func Run() (*Status, error) {
 }
 
 func main() {
-	// Set properties of the predefined Logger, including
-	// the log entry prefix and a flag to disable printing
-	// the time, source file, and line number.
-	log.SetPrefix("run-parts-go: ")
-	log.SetFlags(0)
-	flag.Parse()
-	if *test && *list {
-		log.Fatalln("--list and --test cannot be used together")
-	}
-	if flag.NArg() > 1 {
-		flag.Usage()
-		log.Fatalln("only one DIRECTORY is expected")
-	}
-	if flag.NArg() == 1 {
-		dir = flag.Arg(0)
-	}
 	var status, err = Run()
 	if err == nil {
 		os.Exit(status.ExitCode)
