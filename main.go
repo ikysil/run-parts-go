@@ -53,29 +53,30 @@ func FindFiles(dir string) ([]os.FileInfo, error) {
 }
 
 func ActOnFile(file os.FileInfo, status *Status) (err error) {
+	command := dir + "/" + file.Name()
 	if *exit_on_error && status.ExitCode != 0 {
 		return
 	}
 	status.Reset()
 	if *list {
-		log.Printf("%v %v", file.Name(), *arg)
+		log.Printf("%v %v", command, *arg)
 		return
 	}
 	if file.Mode() & 0111 == 0 {
 		return
 	}
 	if *test {
-		log.Printf("%v %v", file.Name(), *arg)
+		log.Printf("%v %v", command, *arg)
 		return
 	}
 	// TODO - implement random sleep
 	if *verbose {
-		log.Printf("executing %v %v", file.Name(), *arg)
+		log.Printf("executing %v %v", command, *arg)
 	}
 	// TODO - implement umask
-	Exec(file, dir, *report, *verbose, *arg, status)
+	Exec(command, dir, *report, *verbose, *arg, status)
 	if (*report || *verbose) && status.ExitCode != 0 {
-		log.Printf("%v exited with return code %v", file.Name(), status.ExitCode)
+		log.Printf("%v exited with return code %v", command, status.ExitCode)
 	}
 	return
 }

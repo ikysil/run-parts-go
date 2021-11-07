@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"sync"
 )
 
@@ -13,8 +12,8 @@ type Report struct {
 	used bool
 }
 
-func NewReport(file os.FileInfo, report bool, verbose bool) *Report {
-	return &Report{reportString: file.Name(), report: report, verbose: verbose}
+func NewReport(reportString string, report bool, verbose bool) *Report {
+	return &Report{reportString: reportString, report: report, verbose: verbose}
 }
 
 func (r *Report) getReport(condition bool) (report string) {

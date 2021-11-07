@@ -18,14 +18,14 @@ func NewReportingWriter(w io.Writer, r func () string) *ReportingWriter {
 func (w *ReportingWriter) Write(d []byte) (int, error) {
 	var r = w.r();
 	if r != "" {
-		w.w.Write([]byte(r + "\n"))
+		w.w.Write([]byte(r + ":\n"))
 	}
     return w.w.Write(d)
 }
 
-func Exec(file os.FileInfo, optDir string, optReport bool, optVerbose bool, optArg []string, status *Status) (err error) {
-	var report = NewReport(file, optReport, optVerbose);
-	var cmd = exec.Command(optDir + "/" + file.Name(), optArg...);
+func Exec(command string, optDir string, optReport bool, optVerbose bool, optArg []string, status *Status) (err error) {
+	var report = NewReport(command, optReport, optVerbose);
+	var cmd = exec.Command(command, optArg...);
 	cmd.Stderr = NewReportingWriter(os.Stderr, report.ErrReport)
 	cmd.Stdout = NewReportingWriter(os.Stdout, report.OutReport)
 	err = cmd.Start()
