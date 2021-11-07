@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	flag "github.com/spf13/pflag"
 )
@@ -16,7 +17,8 @@ type RunPartsArgs struct {
 	Report bool
 	Reverse bool
 	Test bool
-	Umask string
+	umaskString string
+	Umask int
 	Verbose bool
 }
 
@@ -43,7 +45,7 @@ output on. The script's name is not printed to stderr if --verbose also specifie
 `reverse the scripts' execution order.`)
 	flag.BoolVar(&Args.Test, "test", false,
 `print the names of the scripts which would be run, but don't actually run them.`)
-	flag.StringVar(&Args.Umask, "umask", "022",
+	flag.StringVar(&Args.umaskString, "umask", "022",
 `sets the umask to umask before running the scripts. umask should be specified in
 octal. By default the umask is set to 022.`)
 	flag.BoolVarP(&Args.Verbose, "verbose", "v", false,
@@ -61,5 +63,14 @@ octal. By default the umask is set to 022.`)
 		Args.Dir = flag.Arg(0)
 	} else {
 		Args.Dir = "."
+	}
+	if Args.umaskString != "" {
+		output, err := strconv.ParseInt(Args.umaskString, 8, 64)
+		if err != nil {
+			log.Fatalf("can not parse %v as octal integer due to %v", Args.umaskString, err)
+		}
+		Args.Umask = int(output)
+	} else {
+		Args.Umask = 022
 	}
 }

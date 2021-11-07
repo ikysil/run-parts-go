@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"syscall"
 )
 
 type ReportingWriter struct {
@@ -24,6 +25,9 @@ func (w *ReportingWriter) Write(d []byte) (int, error) {
 }
 
 func Exec(command string, status *Status) (err error) {
+	oldUmask := syscall.Umask(Args.Umask)
+	defer syscall.Umask(oldUmask)
+
 	var report = NewReport(command, Args.Report, Args.Verbose);
 	var cmd = exec.Command(command, Args.Arg...);
 	cmd.Stderr = NewReportingWriter(os.Stderr, report.ErrReport)

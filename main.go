@@ -44,7 +44,6 @@ func ActOnFile(file os.FileInfo, status *Status) (err error) {
 	if Args.Verbose {
 		log.Printf("executing %v %v", command, Args.Arg)
 	}
-	// TODO - implement umask
 	Exec(command, status)
 	if (Args.Report || Args.Verbose) && status.ExitCode != 0 {
 		log.Printf("%v exited with return code %v", command, status.ExitCode)
