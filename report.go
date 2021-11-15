@@ -5,7 +5,7 @@ import (
 )
 
 type Report struct {
-	mu sync.Mutex
+	sync.Mutex
 	reportString string
 	report bool
 	verbose bool
@@ -18,8 +18,8 @@ func NewReport(reportString string, report bool, verbose bool) *Report {
 
 func (r *Report) getReport(condition bool) (report string) {
 	report = ""
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.Lock()
+	defer r.Unlock()
 	if r.used {
 		return
 	}
