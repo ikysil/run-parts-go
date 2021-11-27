@@ -12,6 +12,8 @@ type ReportingWriter struct {
 	r func () string
 }
 
+var _ io.Writer = (*ReportingWriter) (nil)
+
 func NewReportingWriter(w io.Writer, r func () string) *ReportingWriter {
 	return &ReportingWriter{w, r}
 }
